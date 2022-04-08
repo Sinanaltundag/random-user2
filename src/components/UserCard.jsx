@@ -1,14 +1,14 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import male from "../assets/man.svg";
-import female from "../assets/woman.svg";
-import mail from "../assets/mail.svg";
-import map from "../assets/map.svg";
-import phone from "../assets/phone.svg";
-import padlock from "../assets/padlock.svg";
-import growMan from "../assets/growing-up-man.svg";
-import growWoman from "../assets/growing-up-woman.svg";
+import Male from "../assets/man.svg";
+import Female from "../assets/woman.svg";
+import Mail from "../assets/mail.svg";
+import Map from "../assets/map.svg";
+import Phone from "../assets/phone.svg";
+import Padlock from "../assets/padlock.svg";
+import GrowMan from "../assets/growing-up-man.svg";
+import GrowWoman from "../assets/growing-up-woman.svg";
 const StyledCard = styled.div`
   background: linear-gradient(gray 150px, white 155px);
   width: 700px;
@@ -20,6 +20,10 @@ const StyledCard = styled.div`
     color: white;
     margin: 1rem 2rem;
     padding: 0.5rem 1rem;
+    &:hover{
+      color: purple;
+      background-color: white;
+    }
   }
   .imgContainer {
     display: flex;
@@ -34,19 +38,22 @@ const Img = styled.img`
   border: 3px solid white;
   box-shadow: 0 0 4px 2px gray;
   object-fit: cover;
+  cursor: pointer;
 `;
 
 const addUser = () => {};
 
 const UserCard = () => {
-  const [randomUser, setRandomUser] = useState();
+  const [randomUser, setRandomUser] = useState({});
   const [property, setProperty] = useState([]);
+
+
 
   const fetchUser = async () => {
     try {
       const user = await axios.get("https://randomuser.me/api/");
-const data = await user.data.results[0];
-      setRandomUser(user.data);
+
+      setRandomUser(user.data.results[0]);
     } catch (error) {
       console.log(error);
     }
@@ -55,50 +62,67 @@ const data = await user.data.results[0];
     fetchUser();
   }, []);
   const handleClick = (e) => {
-    console.log(e);
+    const { email, phone, picture, name, dob, gender, login, location } =
+      randomUser;
+      
+    console.log(picture);
+    console.log(randomUser);
+    // console.log(e)
     if (e.target.tagName === "IMG") {
-      console.log(e.target.alt);
-      setProperty(["e.target.alt", randomUser["email"]]);
+      // console.log(e.target.alt)
+      switch (e.target.alt) {
+        case "name":
+          setProperty([e.target.alt, [name.first, " ", name.last]]);
+          break;
+        case "email":
+          setProperty([e.target.alt, email]);
+          break;
+        case "phone":
+          setProperty([e.target.alt, phone]);
+          break;
+        case "age":
+          setProperty([e.target.alt, dob.age]);
+          break;
+        case "password":
+          setProperty([e.target.alt, login.password]);
+          break;
+        case "map":
+          setProperty([
+            "street",
+            [location.street.number, " ", location.street.name],
+          ]);
+          break;
+
+        default:
+          break;
+      }
       console.log(property);
     }
   };
- /*  useEffect(() => {
-const {
-      email,
-      phone,
-      picture: { medium },
-      name: { first, last },
-      dob: { age },
-      gender,
-      login: { password },
-      location: { street },
-    } = randomUser;
-    console.log(street);
-  }, [randomUser]) */
-  
-  if (randomUser) {
-    
-  }
-  console.log(randomUser);
+
+useEffect(() => {
+ randomUser.name? setProperty(["name",[randomUser.name.first, " ", randomUser.name.last]]):setProperty([1,2])
+}, [randomUser])
+
 
   return (
     <div>
       <StyledCard>
         <Img src={randomUser.picture?.medium} alt="" big="150px" />
         <p>
-          My <span></span> is
+          My <span>{property[0]}</span> is
         </p>
-        <h3> {randomUser.email} </h3>
+        <h3> {property[1]}</h3>
         <div className="imgContainer" onClick={(e) => handleClick(e)}>
-          <Img src={randomUser.gender === "male" ? male : female} alt="name" />
-          <Img src={mail} alt="mail" />
+          <Img src={randomUser.gender === "male" ? Male : Female} alt="name" />
+          <Img src={Mail} alt="email" />
           <Img
-            src={randomUser.gender === "male" ? growMan : growWoman}
+            src={randomUser.gender === "male" ? GrowMan : GrowWoman}
             alt="age"
           />
-          <Img src={map} alt="map" />
-          <Img src={phone} alt="phone" />
-          <Img src={padlock} alt="password" />
+          <Img src={Map} alt="map" />
+          <Img src={Phone} alt="phone" />
+          <Img src={Padlock} alt="password" />
         </div>
         <button onClick={fetchUser}>New User</button>
         <button onClick={addUser}>Add User</button>
