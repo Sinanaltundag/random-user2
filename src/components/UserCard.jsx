@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import Male from "../assets/man.svg";
 import Female from "../assets/woman.svg";
@@ -53,7 +53,21 @@ const UserCard = () => {
     try {
       const user = await axios.get("https://randomuser.me/api/");
 
-      setRandomUser(user.data.results[0]);
+      const {
+        email,
+        phone,
+        picture: { medium },
+        name: { first, last },
+        dob: { age },
+        gender,
+        login: { password },
+        location: { street: {number, name:street} },
+      } =
+      user.data.results[0];
+      const newUser = {name:first+" "+last, email, age, map:number+" "+ street, phone, password,gender,avatar:medium}
+      setRandomUser(newUser);
+// const {medium}= picture
+console.log(randomUser)
     } catch (error) {
       console.log(error);
     }
@@ -62,34 +76,32 @@ const UserCard = () => {
     fetchUser();
   }, []);
   const handleClick = (e) => {
-    const { email, phone, picture, name, dob, gender, login, location } =
-      randomUser;
+   
       
-    console.log(picture);
     console.log(randomUser);
     // console.log(e)
     if (e.target.tagName === "IMG") {
       // console.log(e.target.alt)
       switch (e.target.alt) {
         case "name":
-          setProperty([e.target.alt, [name.first, " ", name.last]]);
+          setProperty([e.target.alt, randomUser.name]);
           break;
         case "email":
-          setProperty([e.target.alt, email]);
+          setProperty([e.target.alt, randomUser.email]);
           break;
         case "phone":
-          setProperty([e.target.alt, phone]);
+          setProperty([e.target.alt, randomUser.phone]);
           break;
         case "age":
-          setProperty([e.target.alt, dob.age]);
+          setProperty([e.target.alt, randomUser.age]);
           break;
         case "password":
-          setProperty([e.target.alt, login.password]);
+          setProperty([e.target.alt, randomUser.password]);
           break;
         case "map":
           setProperty([
             "street",
-            [location.street.number, " ", location.street.name],
+            [randomUser.map],
           ]);
           break;
 
@@ -101,14 +113,14 @@ const UserCard = () => {
   };
 
 useEffect(() => {
- randomUser.name? setProperty(["name",[randomUser.name.first, " ", randomUser.name.last]]):setProperty([1,2])
+ setProperty(["name",randomUser.name])
 }, [randomUser])
 
 
   return (
     <div>
       <StyledCard>
-        <Img src={randomUser.picture?.medium} alt="" big="150px" />
+        <Img src={randomUser.avatar} alt="" big="150px" />
         <p>
           My <span>{property[0]}</span> is
         </p>
