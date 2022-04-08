@@ -9,25 +9,34 @@ import Phone from "../assets/phone.svg";
 import Padlock from "../assets/padlock.svg";
 import GrowMan from "../assets/growing-up-man.svg";
 import GrowWoman from "../assets/growing-up-woman.svg";
+import Table from "./Table";
 const StyledCard = styled.div`
   background: linear-gradient(gray 150px, white 155px);
   width: 700px;
   margin: 2rem auto;
   padding: 2rem;
+  box-shadow: 0 0 4px 3px #3a3a3a;
   button {
     width: 150px;
     background-color: purple;
     color: white;
     margin: 1rem 2rem;
     padding: 0.5rem 1rem;
-    &:hover{
-      color: purple;
-      background-color: white;
+    transition: all 0.5s;
+    border-radius: 5px;
+    border: none;
+    &:hover {
+      color: #000;
+      background-color: #FEC861;
     }
   }
   .imgContainer {
     display: flex;
     justify-content: space-around;
+  }
+  .alert {
+    border: 2px solid red;
+    padding: 0.5rem;
   }
 `;
 const Img = styled.img`
@@ -38,21 +47,37 @@ const Img = styled.img`
   border: 3px solid white;
   box-shadow: 0 0 4px 2px gray;
   object-fit: cover;
-  cursor: pointer;
+  cursor: ${(props) => props.cursor || "pointer"};
 `;
-
-const addUser = () => {};
 
 const UserCard = () => {
   const [randomUser, setRandomUser] = useState({});
   const [property, setProperty] = useState([]);
+  const [showTable, setShowTable] = useState(false);
+  const [tableRows, setTableRows] = useState([]);
+  const [isAdded, setIsAdded] = useState();
 
+  const addUser = () => {
+    setShowTable(true);
 
+    const result = tableRows.find(({ email }) => email === randomUser.email);
+    setIsAdded(result);
+    if (!result) {
+      const newAddition = {
+        name: randomUser.name,
+        email: randomUser.email,
+        phone: randomUser.phone,
+        age: randomUser.age
+      };
+
+      tableRows.push(newAddition);
+      setTableRows(tableRows);
+    }
+  };
 
   const fetchUser = async () => {
     try {
       const user = await axios.get("https://randomuser.me/api/");
-
       const {
         email,
         phone,
@@ -61,13 +86,21 @@ const UserCard = () => {
         dob: { age },
         gender,
         login: { password },
-        location: { street: {number, name:street} },
-      } =
-      user.data.results[0];
-      const newUser = {name:first+" "+last, email, age, map:number+" "+ street, phone, password,gender,avatar:medium}
+        location: {
+          street: { number, name: street },
+        },
+      } = user.data.results[0];
+      const newUser = {
+        name: first + " " + last,
+        email,
+        age,
+        map: number + " " + street,
+        phone,
+        password,
+        gender,
+        avatar: medium,
+      };
       setRandomUser(newUser);
-// const {medium}= picture
-console.log(randomUser)
     } catch (error) {
       console.log(error);
     }
@@ -76,12 +109,7 @@ console.log(randomUser)
     fetchUser();
   }, []);
   const handleClick = (e) => {
-   
-      
-    console.log(randomUser);
-    // console.log(e)
     if (e.target.tagName === "IMG") {
-      // console.log(e.target.alt)
       switch (e.target.alt) {
         case "name":
           setProperty([e.target.alt, randomUser.name]);
@@ -99,28 +127,28 @@ console.log(randomUser)
           setProperty([e.target.alt, randomUser.password]);
           break;
         case "map":
-          setProperty([
-            "street",
-            [randomUser.map],
-          ]);
+          setProperty(["street", [randomUser.map]]);
           break;
 
         default:
           break;
       }
-      console.log(property);
     }
   };
 
-useEffect(() => {
- setProperty(["name",randomUser.name])
-}, [randomUser])
+  useEffect(() => {
+    setProperty(["name", randomUser.name]);
+  }, [randomUser]);
+  useEffect(() => {}, [tableRows]);
 
+  setTimeout(() => {
+    setIsAdded(false);
+  }, 3000);
 
   return (
     <div>
       <StyledCard>
-        <Img src={randomUser.avatar} alt="" big="150px" />
+        <Img src={randomUser.avatar} alt="" big="150px" cursor="true" />
         <p>
           My <span>{property[0]}</span> is
         </p>
@@ -138,6 +166,12 @@ useEffect(() => {
         </div>
         <button onClick={fetchUser}>New User</button>
         <button onClick={addUser}>Add User</button>
+        {isAdded && (
+          <div className="alert">
+            {isAdded.name} is added before with same email: "{isAdded.email}" !
+          </div>
+        )}
+        {showTable && <Table tableRows={tableRows} />}
       </StyledCard>
     </div>
   );
